@@ -50,7 +50,7 @@ def list_states(ctx: Context):
 @instancectl_cmd.command()
 @click.pass_context
 @click.option("--key", "-k", prompt=True)
-@click.option("--action", "-k", prompt=True)
+@click.option("--action", "-a", prompt=True)
 def perform_action(ctx: Context, key: str, action: str):
     context = ctx.ensure_object(ClickContextObject)
     if key not in context.instances:
