@@ -19,13 +19,14 @@ def instancectl_cmd(ctx: Context):
 
 
 @instancectl_cmd.command()
-@click.option("--provider", "-p", prompt=True)
-@click.option("--instance-id", "-i", prompt=True)
 @click.pass_context
-def add_instance(ctx: Context, provider: str, instance_id: str):
+@click.option("--provider", "-p", prompt=True)
+@click.option("--instance-id", "-i", prompt="Instance ID")
+@click.option("--key", "-k", prompt=True)
+def add_instance(ctx: Context, provider: str, instance_id: str, key: str):
     context = ctx.ensure_object(ClickContextObject)
 
-    context.add_instance(provider, instance_id)
+    context.add_instance(provider, instance_id, key)
     context.write_to_storage()
     click.echo(f"Added instance {instance_id}")
 
@@ -34,14 +35,26 @@ def add_instance(ctx: Context, provider: str, instance_id: str):
 @click.pass_context
 def list_instances(ctx: Context):
     context = ctx.ensure_object(ClickContextObject)
-    for instance in context.instances:
-        click.echo(f"{instance.id} ({instance.provider.get_slug()})")
+    for key, instance in context.instances.items():
+        click.echo(f"{key} ({instance.provider.get_slug()}, {instance.id})")
 
 
 @instancectl_cmd.command()
 @click.pass_context
 def list_states(ctx: Context):
     context = ctx.ensure_object(ClickContextObject)
-    for instance in context.instances:
-        details = instance.get_details()
-        click.echo(f"{details.display_name}: {details.state}")
+    for key, instance in context.instances.items():
+        click.echo(f"{key}: {instance.get_state()}")
+
+
+@instancectl_cmd.command()
+@click.pass_context
+@click.option("--key", "-k", prompt=True)
+@click.option("--action", "-k", prompt=True)
+def perform_action(ctx: Context, key: str, action: str):
+    context = ctx.ensure_object(ClickContextObject)
+    if key not in context.instances:
+        click.echo("Key not found :(")
+        return
+    context.instances[key].perform_action(action)
+    click.echo(f"Action {action} performed.")
